@@ -37,7 +37,7 @@ BIN_EXTENSION = bin
 
 # Vars for emscripten build
 RAYLIB_PATH := /Users/pabloweremczuk/Documents/Proyectos/c/raylib
-EMSC_CFLAGS := -O2 -s -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0 -s USE_GLFW=3 -s TOTAL_MEMORY=67108864 -v -D OS_WEB
+EMSC_CFLAGS := -O0 -s -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0 -s USE_GLFW=3 -s TOTAL_MEMORY=67108864 -v -D OS_WEB -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4
 EMSC_CC := emcc
 EMSC_STATIC_LIBS_D :=
 # EMSC_STATIC_LIBS_D := $(LIBS_D)static/libraylib.bc
@@ -55,7 +55,7 @@ ifeq ($(DETTECTED_OS),Linux)
 	TEST_LINK_LIBS := -lunity 
 	#LINK_LIBS := -l:libraylib-linux.a -l:libglfw3.a -lm -ldl -lpthread -lX11 -lxcb -lGL -lGLX -lXext -lGLdispatch -lXau -lXdmcp
 else ifeq ($(DETTECTED_OS),Darwin)
-	LINK_LIBS := 
+	LINK_LIBS := -pthreads
 	#LINK_LIBS := -O0 -framework IOKit -v -lraylib -framework OpenGL -framework cocoa 
 endif
 
@@ -68,13 +68,13 @@ endif
 all: print_information main web web_no_threads main_no_threads
 
 main: $(SRC_D)main.c
-	$(CC) $(CFLAGS) -D__EMSCRIPTEN_PTHREADS__  $(INCLUDE_D) $(STATIC_LIBS_D) -o $(BLD_D)$@.bin $^ $(LINK_LIBS)
+	$(CC) $(CFLAGS) -DUSE_PTHREADS  $(INCLUDE_D) $(STATIC_LIBS_D) -o $(BLD_D)$@.bin $^ $(LINK_LIBS)
 
 main_no_threads: $(SRC_D)main.c
 	$(CC_COMMAND) -o $(BLD_D)$@.bin $^ $(LINK_LIBS)
 
 web:
-	$(EMSC_CC_COMMAND) -D__EMSCRIPTEN_PTHREADS__ -g4 --source-map-base http://127.0.0.1:5500/html/ $(SRC_D)main.c -o $(HTML_D)main.html $(EMSC_STATIC_LIBS_D)
+	$(EMSC_CC) $(EMSC_CFLAGS) -DUSE_PTHREADS $(INCLUDE_D) $(STATIC_LIBS_D) -g4 --source-map-base http://127.0.0.1:5500/html/ $(SRC_D)main.c -o $(HTML_D)main.html $(EMSC_STATIC_LIBS_D)
 	cp -r src html/src
 
 web_no_threads: 

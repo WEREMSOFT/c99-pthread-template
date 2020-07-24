@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdio.h>
 #include <pthread.h>
-#include <time.h>
+#include <wall_clock.h>
 
 void *my_turn(void *param) {
     int *i = (int *) param;
@@ -22,13 +22,13 @@ int main(void){
     printf("Browser dettected\n");
     #endif
     
-    time_t begin, end;
     int y, m, a, b;
 
     y = m = b = a = 0;
-    begin = time(NULL);
 
-#ifdef __EMSCRIPTEN_PTHREADS__
+    wall_clock_start();
+
+#ifdef USE_PTHREADS
     pthread_t my_t, your_t, a_t, b_t;
     printf("Threads ARE supported!!!\n");
 
@@ -76,13 +76,11 @@ int main(void){
     my_turn(&b);
 #endif
 
-    end = time(NULL);
-
     printf("mine value %d\n", m);
     printf("yours value %d\n", y);
     printf("mine value %d\n", a);
     printf("yours value %d\n", b);
-    printf("Elapsed time %f\n", difftime(end, begin));
+    wall_clock_end();
 
     return 0;
 }
